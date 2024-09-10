@@ -16,13 +16,16 @@ const bfs = (x, y) => {
     const queue = [[x, y, 1]];
     const dx = [-1, 0, 1, 0];
     const dy = [0, -1, 0, 1];
+    let start = 0;
 
     let maxCount = 0;
 
     visited[x][y] = true;
 
-    while (queue.length) {
-        const [currentX, currentY, count] = queue.shift();
+    while (start < queue.length) {
+        const [currentX, currentY, count] = queue[start];
+
+        start += 1;
 
         for (let i = 0; i < 4; i += 1) {
             const nx = currentX + dx[i];
