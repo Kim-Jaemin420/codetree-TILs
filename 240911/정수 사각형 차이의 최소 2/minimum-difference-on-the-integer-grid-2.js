@@ -10,37 +10,37 @@ const input = (() => {
 
 const n = +input();
 const graph = Array.from(Array(n), () => input().split(" ").map(Number));
-const dp = Array.from(Array(n), () => Array(n).fill(null).map(() => ({min: Infinity, max: -Infinity})));
+const dp = Array.from(Array(n), () => Array(n).fill(null).map(() => []));
 
-function updateMinMax(current, newValue) {
-    return {
-        min: Math.min(current.min, newValue),
-        max: Math.max(current.max, newValue)
-    };
-}
+// Initialize the first cell
+dp[0][0] = [{min: graph[0][0], max: graph[0][0]}];
 
-dp[0][0] = {min: graph[0][0], max: graph[0][0]};
-
+// Fill the dp table
 for (let i = 0; i < n; i += 1) {
     for (let j = 0; j < n; j += 1) {
         if (i === 0 && j === 0) continue;
 
-        let fromTop = i > 0 ? dp[i-1][j] : null;
-        let fromLeft = j > 0 ? dp[i][j-1] : null;
-
-        if (fromTop && fromLeft) {
-            let newFromTop = updateMinMax(fromTop, graph[i][j]);
-            let newFromLeft = updateMinMax(fromLeft, graph[i][j]);
-            let newDiffTop = newFromTop.max - newFromTop.min;
-            let newDiffLeft = newFromLeft.max - newFromLeft.min;
-
-            dp[i][j] = newDiffTop <= newDiffLeft ? newFromTop : newFromLeft;
-        } else if (fromTop) {
-            dp[i][j] = updateMinMax(fromTop, graph[i][j]);
-        } else {
-            dp[i][j] = updateMinMax(fromLeft, graph[i][j]);
+        let paths = [];
+        if (i > 0) {
+            paths = paths.concat(dp[i-1][j].map(path => ({
+                min: Math.min(path.min, graph[i][j]),
+                max: Math.max(path.max, graph[i][j])
+            })));
         }
+        if (j > 0) {
+            paths = paths.concat(dp[i][j-1].map(path => ({
+                min: Math.min(path.min, graph[i][j]),
+                max: Math.max(path.max, graph[i][j])
+            })));
+        }
+        dp[i][j] = paths;
     }
 }
 
-console.log(dp[n-1][n-1].max - dp[n-1][n-1].min);
+// Find the minimum difference
+let minDiff = Infinity;
+for (let path of dp[n-1][n-1]) {
+    minDiff = Math.min(minDiff, path.max - path.min);
+}
+
+console.log(minDiff);
