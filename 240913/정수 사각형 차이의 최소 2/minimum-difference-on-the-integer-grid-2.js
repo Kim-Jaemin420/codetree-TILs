@@ -10,51 +10,29 @@ const input = (() => {
 const n = +input();
 const graph = Array.from(Array(n), () => input().split(" ").map(Number));
 
-const dp = Array.from(Array(n), () => 
-  Array.from(Array(n), () => 
-    Array.from(Array(101), () => Array(101).fill(Infinity))
-  )
-);
+const dp = Array.from(Array(n), () => Array(n).fill(null).map(() => ({ min: Infinity, max: -Infinity })));
 
-dp[0][0][graph[0][0]][graph[0][0]] = 0;
+dp[0][0] = { min: graph[0][0], max: graph[0][0] };
 
 for (let i = 0; i < n; i += 1) {
   for (let j = 0; j < n; j += 1) {
+    if (i === 0 && j === 0) continue;
+
     const current = graph[i][j];
-    
-    for (let min = 0; min <= 100; min++) {
-      for (let max = min; max <= 100; max++) {
-        if (dp[i][j][min][max] === Infinity) continue;
+    let fromTop = i > 0 ? dp[i-1][j] : null;
+    let fromLeft = j > 0 ? dp[i][j-1] : null;
 
-        if (j + 1 < n) {
-          const newMin = Math.min(min, current);
-          const newMax = Math.max(max, current);
-          dp[i][j+1][newMin][newMax] = Math.min(
-            dp[i][j+1][newMin][newMax],
-            newMax - newMin
-          );
-        }
-        
-        if (i + 1 < n) {
-          const newMin = Math.min(min, current);
-          const newMax = Math.max(max, current);
-          dp[i+1][j][newMin][newMax] = Math.min(
-            dp[i+1][j][newMin][newMax],
-            newMax - newMin
-          );
-        }
-      }
+    if (fromTop && fromLeft) {
+      dp[i][j].min = Math.min(Math.min(fromTop.min, fromLeft.min), current);
+      dp[i][j].max = Math.max(Math.max(fromTop.max, fromLeft.max), current);
+    } else if (fromTop) {
+      dp[i][j].min = Math.min(fromTop.min, current);
+      dp[i][j].max = Math.max(fromTop.max, current);
+    } else {
+      dp[i][j].min = Math.min(fromLeft.min, current);
+      dp[i][j].max = Math.max(fromLeft.max, current);
     }
   }
 }
 
-let result = Infinity;
-for (let min = 0; min <= 100; min += 1) {
-  for (let max = min; max <= 100; max += 1) {
-    if (dp[n-1][n-1][min][max] !== Infinity) {
-      result = Math.min(result, dp[n-1][n-1][min][max]);
-    }
-  }
-}
-
-console.log(result);
+console.log(dp[n-1][n-1].max - dp[n-1][n-1].min);
